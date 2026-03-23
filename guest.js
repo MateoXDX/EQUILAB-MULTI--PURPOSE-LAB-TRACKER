@@ -1,14 +1,29 @@
 let allEquipmentData = [];
 let selectedEquipment = [];
 
+// MOVED TO GLOBAL SCOPE
+function updateOpenFormButton() {
+    const anyChecked = $('.equipment-checkbox:checked').length > 0;
+    const $openBtn = $('#openBorrowerFormBtn');
+    const $modal = $('#borrowerFormModal');
+    
+    if (anyChecked) {
+        $openBtn.show();
+    } else {
+        $openBtn.hide();
+        $modal.hide();
+        $('body').css('overflow', ''); 
+    }
+}
+
 $(document).ready(function() {
     getGuestNumber();
     setCurrentDate();
     fetchEquipment();
     loadInstructorList();
-  });
+});
   
-  function getGuestNumber() {
+function getGuestNumber() {
     $.ajax({
         url: 'get_guest_number.php',
         method: 'GET',
@@ -41,75 +56,71 @@ $(document).ready(function() {
     setCurrentDate();
 });
 
-
 $(document).ready(function () {
-  $.ajax({
-      url: 'fetch_instructors.php',
-      method: 'GET',
-      success: function (data) {
-          const instructors = JSON.parse(data);
-          instructors.forEach(function (instructor) {
-              $('#instructorName').append(new Option(instructor.instructor_name, instructor.name));
-          });
-      },
-      error: function () {
-          alert('Failed to load instructors.');
-      }
-  });
+    $.ajax({
+        url: 'fetch_instructors.php',
+        method: 'GET',
+        success: function (data) {
+            const instructors = JSON.parse(data);
+            instructors.forEach(function (instructor) {
+                $('#instructorName').append(new Option(instructor.instructor_name, instructor.name));
+            });
+        },
+        error: function () {
+            alert('Failed to load instructors.');
+        }
+    });
 
-  $.ajax({
-      url: 'fetch_rooms.php',
-      method: 'GET',
-      success: function (data) {
-          const rooms = JSON.parse(data);
-          rooms.forEach(function (room) {
-              $('#roomSelect').append(new Option(room.room_number, room.room_number));
-          });
-      },
-      error: function () {
-          alert('Failed to load rooms.');
-      }
-  });
+    $.ajax({
+        url: 'fetch_rooms.php',
+        method: 'GET',
+        success: function (data) {
+            const rooms = JSON.parse(data);
+            rooms.forEach(function (room) {
+                $('#roomSelect').append(new Option(room.room_number, room.room_number));
+            });
+        },
+        error: function () {
+            alert('Failed to load rooms.');
+        }
+    });
 });
 
 function showConfirmationModal() {
-  const last = $('#lastName').val().trim().toUpperCase();
-  const first = $('#firstName').val().trim().toUpperCase();
-  const mi = $('#middleInitial').val().trim().toUpperCase();
+    console.log("selectedEquipment:", selectedEquipment);
+    console.log("equipmentListInForm rows:", $('#equipmentListInForm tr').length);
 
-  if (!last || !first || !mi) {
-      alert('Please complete the borrower\'s full name: Last, First, and Middle Initial.');
-      return;
-  }
+    if (!last || !first || !mi) {
+        alert('Please complete the borrower\'s full name: Last, First, and Middle Initial.');
+        return;
+    }
 
-  // Combine name and store in hidden input
-  const fullName = `${last}, ${first} ${mi}.`;
-  $('#borrowerName').val(fullName);
+    const fullName = `${last}, ${first} ${mi}.`;
+    $('#borrowerName').val(fullName);
 
-  const borrowerName = $('#borrowerName').val();
-  const studentID = $('#studentID').val();
-  const subjectCode = $('#subjectCode').val();
-  const usageDate = $('#usageDate').val();
-  const roomSelect = $('#roomSelect').val();
-  const instructorSelect = $('#instructorName').val();
-  const hasEquipment = $('#equipmentListInForm tr').length > 0;
+    const borrowerName = $('#borrowerName').val();
+    const studentID = $('#studentID').val();
+    const subjectCode = $('#subjectCode').val();
+    const usageDate = $('#usageDate').val();
+    const roomSelect = $('#roomSelect').val();
+    const instructorSelect = $('#instructorName').val();
+    const hasEquipment = $('#equipmentListInForm tr').length > 0;
 
-  if (!borrowerName || !studentID || !subjectCode || !usageDate || !roomSelect || !instructorSelect) {
-      alert('Please fill out all fields before submitting, including selecting a room and instructor.');
-      return;  
-  }
+    if (!borrowerName || !studentID || !subjectCode || !usageDate || !roomSelect || !instructorSelect) {
+        alert('Please fill out all fields before submitting, including selecting a room and instructor.');
+        return;  
+    }
 
-  if (!hasEquipment) {
-      alert('Please select at least one equipment/material before submitting.');
-      return;
-  }
+    if (!hasEquipment) {
+        alert('Please select at least one equipment/material before submitting.');
+        return;
+    }
 
-  $('#confirmationModal').fadeIn();
+    $('#confirmationModal').fadeIn();
 }
 
-
 function closeConfirmationModal() {
-  $('#confirmationModal').fadeOut();
+    $('#confirmationModal').fadeOut();
 }
 
 $(document).ready(function () {
@@ -176,121 +187,76 @@ function filterAndDisplayEquipment() {
     populateEquipmentTable(filteredData);
 }
 
-
 function populateEquipmentTable(equipmentData) {
     const equipmentList = $("#equipmentList");
-    equipmentList.empty(); 
+    equipmentList.empty();
 
     equipmentData.forEach(item => {
-        const checkbox = $(`<input type="checkbox" class="equipment-checkbox" data-id="${item.equipment_id}">`);
-
-        if (Number(item.available) === 0) {
-            checkbox.prop('disabled', true).prop('title', 'Not Available');
-        }
-
-        checkbox.on("change", function () {
-            const isChecked = $(this).is(':checked');
-            const equipmentId = $(this).data('id');
-            
-            if (isChecked) {
-                // Find the equipment in allEquipmentData
-                const equipment = allEquipmentData.find(eq => eq.equipment_id === equipmentId);
-                if (equipment) {
-                    toggleEquipmentSelection(equipment, true);
-                }
-            } else {
-                const equipment = allEquipmentData.find(eq => eq.equipment_id === equipmentId);
-                if (equipment) {
-                    toggleEquipmentSelection(equipment, false);
-                }
-            }
-        });
+        const isChecked = selectedEquipment.some(eq => eq.equipment_id === item.equipment_id);
+        const isDisabled = Number(item.available) === 0;
 
         const row = $("<tr>");
-        row.append($("<td>").append(checkbox));
+        row.append($("<td>").append(
+            $(`<input type="checkbox" class="equipment-checkbox" data-id="${item.equipment_id}">`)
+                .prop('checked', isChecked)
+                .prop('disabled', isDisabled)
+                .prop('title', isDisabled ? 'Not Available' : '')
+        ));
         row.append(`<td>${item.equipment_id}</td>`);
         row.append(`<td>${item.equipment_name}</td>`);
         row.append(`<td>${item.available}</td>`);
-
         equipmentList.append(row);
     });
-
-    // Re-attach search functionality
-    $('#searchInput').on('input', function () {
-        const searchValue = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#equipmentTable tbody tr');
-
-        rows.forEach(row => {
-            const id = row.cells[1].textContent.toLowerCase();
-            const name = row.cells[2].textContent.toLowerCase();
-
-            if (id.includes(searchValue) || name.includes(searchValue)) {
-                row.style.display = ''; 
-            } else {
-                row.style.display = 'none'; 
-            }
-        });
-    });
 }
 
-
-  
-  $(document).ready(function () {
+$(document).ready(function () {
     $('#rulesModal').fadeIn();
 
-    const $openBtn = $('#openBorrowerFormBtn');
-const $modal = $('#borrowerFormModal');
-const $closeBtn = $('#closeBorrowerFormBtn');
+    $('#equipmentList').on('change', '.equipment-checkbox', function() {
+        const isChecked = $(this).is(':checked');
+        const equipmentId = $(this).data('id');
+        const equipment = allEquipmentData.find(eq => eq.equipment_id === equipmentId);
+        if (equipment) {
+            toggleEquipmentSelection(equipment, isChecked);
+        }
+        updateOpenFormButton();
+    });
 
-function updateOpenFormButton() {
-    const anyChecked = $('.equipment-checkbox:checked').length > 0;
     const $openBtn = $('#openBorrowerFormBtn');
     const $modal = $('#borrowerFormModal');
-    
-    if (anyChecked) {
-        $openBtn.show();
-    } else {
+    const $closeBtn = $('#closeBorrowerFormBtn');
+
+
+
+    $openBtn.on('click', function() {
+        updateBorrowerFormList();
+        $modal.show();
         $openBtn.hide();
-        $modal.hide();
-        $('body').css('overflow', ''); 
-    }
-}
+        $('body').css('overflow', 'hidden');
+    });
 
-updateOpenFormButton();
-
-$('#equipmentList').on('change', 'input[type=checkbox]', function() {
-    updateOpenFormButton();
-});
-
-$openBtn.on('click', function() {
-    updateBorrowerFormList();
-    $modal.show();
-    $openBtn.hide();             
-    $('body').css('overflow', 'hidden'); 
-});
-
-$closeBtn.on('click', function() {
-    $modal.hide();
-    $('body').css('overflow', ''); 
-    updateOpenFormButton();       
-});
-
-$modal.on('click', function(e) {
-    if (e.target === this) {
+    $closeBtn.on('click', function() {
         $modal.hide();
         $('body').css('overflow', '');
-        updateOpenFormButton();    
-    }
-});
+        updateOpenFormButton();
+    });
+
+    $modal.on('click', function(e) {
+        if (e.target === this) {
+            $modal.hide();
+            $('body').css('overflow', '');
+            updateOpenFormButton();
+        }
+    });
 
     $('#agreeCheckbox').on('change', function () {
         $('#agreeBtn').prop('disabled', !this.checked);
     });
-  
+
     $('#agreeBtn').on('click', function () {
         $('#rulesModal').fadeOut();
     });
-  });
+});
   
 function toggleEquipmentSelection(equipment, checked) {
     if (checked) {
@@ -357,22 +323,21 @@ function updateBorrowerFormList() {
     });
 }
 
-  function showEquipment() {
-      document.getElementById("equipmentSection").style.display = "block";
-      document.getElementById("borrowerFormSection").style.display = "none";
-      document.getElementById("topBar").style.display = "block"; 
-  }
+function showEquipment() {
+    document.getElementById("equipmentSection").style.display = "block";
+    document.getElementById("borrowerFormSection").style.display = "none";
+    document.getElementById("topBar").style.display = "block"; 
+}
 
-  function showBorrowerForm() {
-      document.getElementById("equipmentSection").style.display = "none";
-      document.getElementById("borrowerFormSection").style.display = "block";
-      document.getElementById("topBar").style.display = "none"; 
-  }
+function showBorrowerForm() {
+    document.getElementById("equipmentSection").style.display = "none";
+    document.getElementById("borrowerFormSection").style.display = "block";
+    document.getElementById("topBar").style.display = "none"; 
+}
 
-  function submitBorrowRequest() {
+function submitBorrowRequest() {
     const confirmGuestNumber = $('#confirmGuestNumber').val();
     const borrowerGuestNumber = $('#borrowerGuestNumber').text().trim();
-
 
     if (confirmGuestNumber !== borrowerGuestNumber) {
         alert('Guest number does not match.');
@@ -412,30 +377,30 @@ function updateBorrowerFormList() {
     console.log(data);
 
     $.ajax({
-    url: 'submit_borrow_request.php',
-    method: 'POST',
-    data: { data: JSON.stringify(data) },
-    success: function (res) {
-        console.log("Success response:", res);
-        if (res.success) {
-            showFinalConfirmationModal(data);
-            closeConfirmationModal(); 
-            fetchEquipment(); 
-            selectedEquipment = []; 
-            updateBorrowerFormList(); 
-        } else {
-            alert('Server Error: ' + res.message);
+        url: 'submit_borrow_request.php',
+        method: 'POST',
+        data: { data: JSON.stringify(data) },
+        success: function (res) {
+            console.log("Success response:", res);
+            if (res.success) {
+                showFinalConfirmationModal(data);
+                closeConfirmationModal(); 
+                fetchEquipment(); 
+                selectedEquipment = []; 
+                updateBorrowerFormList(); 
+            } else {
+                alert('Server Error: ' + res.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("AJAX error:", status, error);
+            console.error("Server response:", xhr.responseText);  
+            alert("An error occurred. Check console for server response.");
         }
-    },
-    error: function (xhr, status, error) {
-        console.error("AJAX error:", status, error);
-        console.error("Server response:", xhr.responseText);  
-        alert("An error occurred. Check console for server response.");
-    }
-});
+    });
 }
 
-  function loadInstructorList() {
+function loadInstructorList() {
     $.ajax({
         url: 'get_instructors.php',
         method: 'GET',
@@ -453,25 +418,25 @@ function updateBorrowerFormList() {
 }
 
 function getRooms() {
-  $.ajax({
-      url: 'get_rooms.php',
-      method: 'GET',
-      success: function(response) {
-          const rooms = JSON.parse(response);
-          const roomSelect = $('#roomSelect');
+    $.ajax({
+        url: 'get_rooms.php',
+        method: 'GET',
+        success: function(response) {
+            const rooms = JSON.parse(response);
+            const roomSelect = $('#roomSelect');
 
-          rooms.forEach(room => {
-              const option = $('<option>', {
-                  value: room.room_number, 
-                  text: room.room_number
-              });
-              roomSelect.append(option);
-          });
-      },
-      error: function(xhr, status, error) {
-          console.error("Error loading room data:", error);
-      }
-  });
+            rooms.forEach(room => {
+                const option = $('<option>', {
+                    value: room.room_number, 
+                    text: room.room_number
+                });
+                roomSelect.append(option);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("Error loading room data:", error);
+        }
+    });
 }
 
 function setUsageDate() {
@@ -489,30 +454,30 @@ $(document).ready(function() {
 });
 
 $(document).ready(function() {
-  getRooms();
+    getRooms();
 });
 
 $('#borrowerForm').submit(function(e) {
-  e.preventDefault(); 
-  $.ajax({
-    url: 'submit_borrow_request.php',  
-    method: 'POST',
-    data: $(this).serialize(),
-    success: function(response) {
-      if (response === 'success') {
-        window.location.href = 'logout.php';
-      } else {
-        alert('Error: Could not submit the form');
-      }
-    }
-  });
+    e.preventDefault(); 
+    $.ajax({
+        url: 'submit_borrow_request.php',  
+        method: 'POST',
+        data: $(this).serialize(),
+        success: function(response) {
+            if (response === 'success') {
+                window.location.href = 'logout.php';
+            } else {
+                alert('Error: Could not submit the form');
+            }
+        }
+    });
 });
 
 function showFinalConfirmationModal(data) {
     const originalForm = document.getElementById('borrowerForm');
     if (!originalForm) {
-      alert('Borrower form not found!');
-      return;
+        alert('Borrower form not found!');
+        return;
     }
 
     const clonedForm = originalForm.cloneNode(true);
@@ -543,7 +508,6 @@ $(document).ready(function () {
     });
 });
 
-
 function combineBorrowerName() {
     const last = document.getElementById("lastName").value.trim().toUpperCase();
     const first = document.getElementById("firstName").value.trim().toUpperCase();
@@ -553,7 +517,6 @@ function combineBorrowerName() {
     document.getElementById("borrowerName").value = fullName;
 }
 
-
 window.logout = function () {
-  window.location.href = "logout.php";
+    window.location.href = "logout.php";
 };
