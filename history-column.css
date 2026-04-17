@@ -1,0 +1,271 @@
+/* ════════════════════════════════════════════════════════════════
+   EQUIPMENT HISTORY — append these rules to the bottom of dashboard.css
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── History cell & button in inventory table ── */
+.hist-cell {
+  text-align: center;
+  vertical-align: middle;
+  width: 44px;
+  padding: 0 8px !important;
+}
+
+.hist-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  padding: 0;
+}
+
+.hist-btn:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+  border-color: var(--accent);
+}
+
+.hist-btn.hist-btn-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ── Popover shell ── */
+.hist-popover {
+  position: fixed;     /* fixed so it floats above everything */
+  z-index: 600;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  overflow: hidden;
+  animation: histPopIn .18s cubic-bezier(.4,0,.2,1) both;
+}
+
+@keyframes histPopIn {
+  from { opacity: 0; transform: translateY(6px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);   }
+}
+
+/* ── Popover header ── */
+.hist-pop-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.hist-pop-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 2px;
+}
+
+.hist-pop-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+
+.hist-pop-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3);
+  padding: 2px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  transition: color var(--transition), background var(--transition);
+  flex-shrink: 0;
+}
+.hist-pop-close:hover { color: var(--text-1); background: var(--border); }
+
+/* ── Popover body ── */
+.hist-pop-body {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 10px 14px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.hist-pop-body::-webkit-scrollbar { width: 4px; }
+.hist-pop-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.hist-loading,
+.hist-empty {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 18px 0;
+}
+
+/* ── Date group header ── */
+.hist-date-group { margin-bottom: 12px; }
+
+.hist-date-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 4px 0 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+/* ── Individual entry ── */
+.hist-entry {
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  margin-bottom: 5px;
+  border: 1px solid transparent;
+}
+
+.hist-added  { background: var(--accent-soft);  border-color: rgba(45,106,79,.15); }
+.hist-edited { background: var(--surface-2);     border-color: var(--border); }
+
+.hist-entry-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+/* ── Badges ── */
+.hist-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.hist-badge.added  { background: var(--accent);     color: #fff; }
+.hist-badge.edited { background: var(--warn-soft);  color: var(--warn); }
+
+.hist-time {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--mono);
+  margin-left: auto;
+}
+
+/* ── Entry detail row ── */
+.hist-entry-detail {
+  font-size: 12px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.hist-field {
+  font-weight: 600;
+  color: var(--text-1);
+  font-size: 11.5px;
+}
+
+.hist-arrow {
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.hist-old {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--danger);
+  background: var(--danger-soft);
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-decoration: line-through;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hist-new {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 1px 5px;
+  border-radius: 4px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Snapshot table (shown for Added entries) ── */
+.hist-snapshot {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 7px;
+  font-size: 11.5px;
+}
+
+.hist-snapshot .snap-label {
+  color: var(--text-3);
+  padding: 2px 8px 2px 0;
+  width: 90px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hist-snapshot .snap-val {
+  color: var(--text-1);
+  padding: 2px 0;
+  word-break: break-word;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   ADMIN.PHP TABLE HEADER — manual change needed (one-time)
+   ════════════════════════════════════════════════════════════════
+
+   In admin.php, find the equipment table <thead> and add one <th>
+   after the existing Description <th>. It should look like this:
+
+   FIND:
+   ───────────────────────────────────────────────────────────────
+       <th rowspan="2">Description</th>
+     </tr>
+     <tr>
+       <th title="Total">T</th>
+       <th title="Working">W</th>
+       <th title="Not Working">NW</th>
+     </tr>
+   </thead>
+
+   REPLACE WITH:
+   ───────────────────────────────────────────────────────────────
+       <th rowspan="2">Description</th>
+       <th rowspan="2" style="width:44px;text-align:center;" title="Activity history">
+         <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+           <circle cx="12" cy="12" r="10"/>
+           <polyline points="12 6 12 12 16 14"/>
+         </svg>
+       </th>
+     </tr>
+     <tr>
+       <th title="Total">T</th>
+       <th title="Working">W</th>
+       <th title="Not Working">NW</th>
+     </tr>
+   </thead>
+   ════════════════════════════════════════════════════════════════ */
